@@ -7,18 +7,18 @@ import { BaseError } from '../errors/baseError';
 const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
     // Ошибки от Zod
     if (err instanceof z.ZodError) {
-        req.log.info({ errors: err.issues }, 'Validation error');
+        req.log.info({ errors: err.issues }, 'Validation error. Respond as bad request');
         return res.status(400).json({
-            message: "Ошибка валидации",
-            errors: err.issues.map(issue => ({ path: issue.path, message: issue.message }))
+            code: 400,
+            message: "Bad request"
         });
     }
 
     // Ошибки от Prisma
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === 'P2003') { // ForeignKeyConstraintViolation
-            req.log.warn({ userId: req.body.userId }, 'User not found for foreign key constraint');
-            return res.status(404).json({ message: `Пользователь с ID ${req.body.userId} не найден` });
+            req.log.warn(err, 'ForeignKeyConstraintViolation (in errorhandler)');
+            return res.status(500).json({ message: `internal server error` });
         }
     }
 
@@ -26,6 +26,7 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
     if (err instanceof BaseError) {
         req.log.error({ err }, 'Caught custom error');
         return res.status(err.code).json({
+            code: err.code,
             message: err.message
         });
     }
