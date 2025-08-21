@@ -1,10 +1,14 @@
 import { Router } from 'express';
-import userRoutes from './job';
-import jobRoutes from './user';
+import userRoutes from './user';
+import jobRoutes from './job';
+import logger from '../../logger';
 
 const router = Router();
 
-router.use('/users', userRoutes);
+router.use('/users', (req, res, next) => {
+    
+    next()
+}, userRoutes);
 router.use('/jobs', jobRoutes);
 
 export default router;

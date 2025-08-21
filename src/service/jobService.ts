@@ -24,15 +24,31 @@ export class JobService {
         });
     }
 
-    static async getReadyJobs(): Promise<{
+    static async updateJobStatus(jobId: number, status: string): Promise<Job> {
+        return await prisma.job.update({
+            where: {
+                jobId
+            },
+            data: {
+                status
+            },
+        });
+    }
+
+    static async getJobByStatus(status: string): Promise<{
         jobId: number;
-        status: string;
         userId: number;
-    }[]> { // todo: fix
+        url: string;
+        status: string;
+    }[]> {
         return await prisma.job.findMany({
+            where: {
+                status
+            },
             select: {
                 jobId: true,
                 userId: true,
+                url: true,
                 status: true,
             },
         });

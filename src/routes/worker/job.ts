@@ -1,28 +1,32 @@
-import { Router } from "express";
-import { createJobBodySchema, updateJobBodySchema } from "../../types";
+import { Router, Request, Response } from "express";
+import {
+    createJobBodySchema,
+    CreateJobDTO,
+    updateJobBodySchema,
+} from "../../types";
 import { JobService } from "../../service/jobService";
 import { BadRequestError } from "../../errors/badRequest";
 
 const router = Router();
 
-
 // обновить результат джобы
-router.put("/:id", async (req, res) => {
+router.put("/:id", async (req: Request, res: Response<CreateJobDTO>) => {
     const jobId = parseInt(req.params.id, 10);
     if (isNaN(jobId)) {
-        new BadRequestError("invalid id")
-   }
+        new BadRequestError("invalid id");
+    }
 
-    const { result, status } = updateJobBodySchema.parse(req.body);
+    const { result } = updateJobBodySchema.parse(req.body);
 
-    const newJob = await JobService.updateJobResult(jobId, result, status);
+    const newJob = await JobService.updateJobResult(jobId, result, "ready");
 
-    res.status(201).json({
+    const dto: CreateJobDTO = {
         jobId: newJob.jobId,
         userId: newJob.userId,
         status: newJob.status,
-    });
-});
+    };
 
+    res.status(201).json(dto);
+});
 
 export default router;
