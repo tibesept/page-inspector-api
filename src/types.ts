@@ -25,13 +25,13 @@ export const postJobSchemaDTO = z.object({
     status: z.string(),
 });
 
-export const JobsReadySchemaDTO = z.array(
+export const jobsReadySchemaDTO = z.array(
     z.object({
         jobId: z.number(),
     }),
 );
 
-export const JobSchemaDTO = z
+export const jobSchemaDTO = z
     .object({
         userId: z.number(),
         type: z.number(),
@@ -52,10 +52,29 @@ export const jobTaskSchema = z.object({
     status: z.string(),
 });
 
+
+// WORKER
+
+export const jobWorkerResultSchema = z.object({
+    screenshot: z.string(), // base64 строка
+    status: z.number().nullable(), // HTTP-код или null
+    seo: z.object({
+        title: z.string().nullable(),
+        description: z.string().nullable(),
+        h1: z.string().nullable(),
+        linksCount: z.number(),
+        internalLinks: z.number(),
+        externalLinks: z.number(),
+        robotsTxtExists: z.boolean(),
+    }),
+});
+
+export type JobWorkerResultDTO = z.infer<typeof jobWorkerResultSchema>;
+
 // TYPES
 export type CreateJobBody = z.infer<typeof createJobBodySchema>;
-export type JobsReadyDTO = z.infer<typeof JobsReadySchemaDTO>;
-export type JobDTO = z.infer<typeof JobSchemaDTO>;
+export type JobsReadyDTO = z.infer<typeof jobsReadySchemaDTO>;
+export type JobDTO = z.infer<typeof jobSchemaDTO>;
 export type UserDTO = z.infer<typeof userSchemaDTO>;
 export type CreateJobDTO = z.infer<typeof postJobSchemaDTO>;
 
