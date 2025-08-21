@@ -34,7 +34,7 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
 
 
     req.log.error({ err }, 'Internal server error');
-    return res.status(500).json({ message: "Внутренняя ошибка сервера" }); // return чтоб не было "Can't set headers after they are sent"
+    return res.status(500).json({ message: "Internal server error" }); // return чтоб не было "Can't set headers after they are sent"
 };
 
 export default errorHandler;
