@@ -20,6 +20,10 @@ const errorHandler = (err: any, req: Request, res: Response, next: NextFunction)
             req.log.warn(err, 'ForeignKeyConstraintViolation (in errorhandler)');
             return res.status(500).json({ message: `internal server error` });
         }
+        if(err.code === 'P2025') { // No record was found for an update
+            req.log.error(err, 'Prisma: No record was found for an update');
+            return res.status(404).json({ message: `No record was found for an update` });
+        }
     }
 
     // Кастомные ошибки

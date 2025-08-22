@@ -28,6 +28,8 @@ router.post("/", async (req: Request, res: Response<CreateJobDTO>) => {
         userId,
         url,
         status: newJob.status,
+        type: newJob.type,
+        depth: newJob.depth
     });
 
     const dto: CreateJobDTO = {

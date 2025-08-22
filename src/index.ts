@@ -32,12 +32,9 @@ const server = app.listen(config.port, () => {
     logger.info(`Listening port: ${config.port}`);
 });
 
-<<<<<<< HEAD
-=======
 server.keepAliveTimeout = 65000; // 65 секунд
 server.headersTimeout = 66000;
 
->>>>>>> 7157bf8 (feat: better rabbit class, added queue name env)
 // Закрываем все соединения в случае краша
 const gracefulShutdown = async (signal: string) => {
     logger.info(`\nReceived signal: ${signal}. Starting graceful shutdown.`);
