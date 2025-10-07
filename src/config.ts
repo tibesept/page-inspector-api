@@ -3,7 +3,7 @@ import { get } from "http";
 
 export interface IAppConfig {
     env: "dev" | "prod";
-    port: string;
+    port: number;
     bot_auth_token: string;
     worker_auth_token: string;
     rabbit_url: string;
@@ -23,7 +23,7 @@ const getEnv = <T>(key: string, parser?: (value: string) => T): T => {
 
 export const config: IAppConfig = {
     env: getEnv("NODE_ENV"),
-    port: getEnv("PORT"),
+    port: 3000,
     bot_auth_token: getEnv("BOT_AUTH_TOKEN"),
     worker_auth_token: getEnv("WORKER_AUTH_TOKEN"),
     rabbit_url: getEnv("RABBIT_URL"),
