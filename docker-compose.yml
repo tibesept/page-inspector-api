@@ -19,6 +19,18 @@ services:
       timeout: 5s
       retries: 5
 
+  adminer:
+    env_file: .env
+    container_name: page-analyzer.adminer
+    image: adminer
+    restart: unless-stopped
+
+    ports:
+      - ${ADMINER_PORT}:8080
+    command: ["php", "-d", "upload_max_filesize=10G", "-d", "post_max_size=10G", "-S", "[::]:8080", "-t", "/var/www/html"]
+    networks:
+      - page_analyzer_network
+
   rabbitmq:
     image: rabbitmq:3-management-alpine
     environment:
