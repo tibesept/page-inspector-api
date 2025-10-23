@@ -2,12 +2,15 @@ import { Router, Request, Response } from "express";
 import {
     createJobBodySchema,
     CreateJobDTO,
+    jobAnalyzerSettings,
     jobSchemaDTO,
     updateJobBodySchema,
 } from "../../types";
 import { JobService } from "../../service/jobService";
 import { BadRequestError } from "../../errors/badRequest";
 import logger from "../../logger";
+import { aiService } from "../../service/AIService";
+import { AIGettingSummaryError } from "../../errors/ai";
 
 const router = Router();
 
@@ -39,6 +42,15 @@ router.put("/:id", async (req: Request, res: Response<CreateJobDTO>) => {
     const { result, status } = updateJobBodySchema.parse(req.body);
 
     const newJob = await JobService.updateJobResult(jobId, result, status);
+    const settings = jobAnalyzerSettings.parse(JSON.parse(newJob.settings));
+
+    if(settings.ai_summary) {
+        // получаем резюме от ИИ и сохраняем, если все ок
+        aiService.getSummary(newJob).then(summary => {
+            if(!summary) throw new AIGettingSummaryError(new Error("No summary, nothing to update"));
+            JobService.updateJobSummary(newJob.jobId, summary);
+        });
+    }
 
     const dto: CreateJobDTO = {
         jobId: newJob.jobId,
