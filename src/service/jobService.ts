@@ -1,7 +1,8 @@
 import { Job } from "@prisma/client";
 import { prisma } from "../db";
-import { JobAnalyzerSettingsDB } from "../types";
+import { JobAnalyzerSettingsDB, JobReadySummary } from "../types";
 
+export const ValidJobStatuses = ["pending", "ready", "failed", "sent", "summary_sent"];
 export class JobService {
     static async createJob(url: string, type: number, userId: number, settings: JobAnalyzerSettingsDB): Promise<Job> {
         return await prisma.job.create({
@@ -24,6 +25,16 @@ export class JobService {
             },
         });
     }
+    static async updateJobSummary(jobId: number, ai_summary: string): Promise<Job> {
+        return await prisma.job.update({
+            where: {
+                jobId
+            },
+            data: {
+                ai_summary
+            },
+        });
+    }
 
     static async updateJobStatus(jobId: number, status: string): Promise<Job> {
         return await prisma.job.update({
@@ -34,6 +45,29 @@ export class JobService {
                 status
             },
         });
+    }
+
+    static async getJobsWithSummariesUnsent(): Promise<JobReadySummary[]> {
+        const jobs = await prisma.job.findMany({
+            where: {
+                ai_summary: {
+                    not: null
+                },
+                status: {
+                    in: ["ready", "sent"]
+                }
+            },
+            select: {
+                jobId: true,
+                userId: true,
+                url: true,
+                ai_summary: true,
+            },
+        });
+        return jobs.map(job => ({
+            ...job,
+            ai_summary: job.ai_summary! // чтоб TS не ругался
+        }));
     }
 
     static async getJobByStatus(status: string): Promise<{
