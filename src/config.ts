@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { get } from "http";
 
 export interface IAppConfig {
     env: "dev" | "prod";
@@ -8,6 +7,8 @@ export interface IAppConfig {
     worker_auth_token: string;
     rabbit_url: string;
     rabbit_queue_name: string;
+    ai_api_key: string;
+    ai_url: string;
 }
 
 const getEnv = <T>(key: string, parser?: (value: string) => T): T => {
@@ -27,5 +28,7 @@ export const config: IAppConfig = {
     bot_auth_token: getEnv("BOT_AUTH_TOKEN"),
     worker_auth_token: getEnv("WORKER_AUTH_TOKEN"),
     rabbit_url: getEnv("RABBIT_URL"),
-    rabbit_queue_name: getEnv("RABBIT_QUEUE_NAME")
+    rabbit_queue_name: getEnv("RABBIT_QUEUE_NAME"),
+    ai_api_key: getEnv("AI_API_KEY"),
+    ai_url: getEnv("AI_URL"),
 };
