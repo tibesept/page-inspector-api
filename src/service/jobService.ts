@@ -1,14 +1,15 @@
 import { Job } from "@prisma/client";
 import { prisma } from "../db";
+import { JobAnalyzerSettingsDB } from "../types";
 
 export class JobService {
-    static async createJob(url: string, type: number, depth: number, userId: number): Promise<Job> {
+    static async createJob(url: string, type: number, userId: number, settings: JobAnalyzerSettingsDB): Promise<Job> {
         return await prisma.job.create({
             data: {
                 url,
                 type,
-                depth,
                 userId,
+                settings: JSON.stringify(settings)
             },
         });
     }

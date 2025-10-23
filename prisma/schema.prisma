@@ -27,7 +27,7 @@ model Job {
   // Поля, которые приходят при создании
   url     String
   type    Int
-  depth   Int
+  settings String @default("{}")
 
   // Результат выполнения джобы
   result  String @default("")
