@@ -31,6 +31,7 @@ model Job {
 
   // Результат выполнения джобы
   result  String @default("")
+  ai_summary String?
 
   // Связь с пользователем
   userId Int
