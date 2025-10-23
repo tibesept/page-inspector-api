@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import {
     createJobBodySchema,
     CreateJobDTO,
+    jobAnalyzerSettings,
     JobDTO,
     JobsReadyDTO,
 } from "../../types";
@@ -19,17 +20,19 @@ const router = Router();
 
 // CREATE JOB REQUEST
 router.post("/", async (req: Request, res: Response<CreateJobDTO>) => {
-    const { userId, url, type, depth } = createJobBodySchema.parse(req.body);
+    const { userId, url, type, settings } = createJobBodySchema.parse(req.body);
 
-    const newJob = await JobService.createJob(url, type, depth, userId);
+    // создаем в бд
+    const newJob = await JobService.createJob(url, type, userId, settings);
 
+    // отправляем в очередь
     await rabbitMQClient.sendTask({
         jobId: newJob.jobId,
         userId,
         url,
         status: newJob.status,
         type: newJob.type,
-        depth: newJob.depth
+        settings: newJob.settings
     });
 
     const dto: CreateJobDTO = {
@@ -58,23 +61,35 @@ router.get("/ready", async (req: Request, res: Response<JobsReadyDTO>) => {
 router.get("/:id", async (req: Request, res: Response<JobDTO>) => {
     const jobId = parseInt(req.params.id, 10);
     if (isNaN(jobId)) {
-        new BadRequestError("invalid jobId");
+        throw new BadRequestError("invalid jobId");
     }
 
     const job = await JobService.getJobById(jobId);
+    if(!job?.settings) {
+        throw new NotFoundError("no job settings");
+    } 
+    const jobSettings = jobAnalyzerSettings.parse(JSON.parse(job?.settings));
 
-    if (!job) {
-        new NotFoundError("job not found");
+    if (!job || !job.userId || !job.jobId) {
+        throw new NotFoundError("job not found");
     }
 
-    res.json(job);
+    res.json({
+        userId: job.userId,
+        jobId: job.jobId,
+        type: job.type || null,
+        url: job.url || null,
+        result: job.result || null,
+        status: job.status || null,
+        settings: jobSettings
+    });
 });
 
 // пометить джобу как отправленную
 router.put("/sent/:id", async (req: Request, res: Response<CreateJobDTO>) => {
     const jobId = parseInt(req.params.id, 10);
     if (isNaN(jobId)) {
-        new BadRequestError("invalid id");
+        throw new BadRequestError("invalid id");
     }
 
     const job = await JobService.updateJobStatus(jobId, "sent");
