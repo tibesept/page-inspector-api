@@ -15,7 +15,7 @@ const router = Router();
 router.get("/check/:id", async (req: Request, res: Response<Boolean>) => {
     const jobId = parseInt(req.params.id, 10);
     if (isNaN(jobId)) {
-        new BadRequestError("invalid id");
+        throw new BadRequestError("invalid id");
     }
 
     const newJob = await JobService.getJobById(jobId);
@@ -33,7 +33,7 @@ router.get("/check/:id", async (req: Request, res: Response<Boolean>) => {
 router.put("/:id", async (req: Request, res: Response<CreateJobDTO>) => {
     const jobId = parseInt(req.params.id, 10);
     if (isNaN(jobId)) {
-        new BadRequestError("invalid id");
+        throw new BadRequestError("invalid id");
     }
 
     const { result, status } = updateJobBodySchema.parse(req.body);
