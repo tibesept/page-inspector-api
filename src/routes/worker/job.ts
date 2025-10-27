@@ -4,6 +4,7 @@ import {
     CreateJobDTO,
     jobAnalyzerSettings,
     jobSchemaDTO,
+    jobWorkerResultSchema,
     updateJobBodySchema,
 } from "../../types";
 import { JobService } from "../../service/jobService";
@@ -43,10 +44,24 @@ router.put("/:id", async (req: Request, res: Response<CreateJobDTO>) => {
 
     const newJob = await JobService.updateJobResult(jobId, result, status);
     const settings = jobAnalyzerSettings.parse(JSON.parse(newJob.settings));
-
+    
+    // --- AI SUMMARY ----
     if(settings.ai_summary) {
+        const {
+            screenshot, // скриншот нам не нужен 
+            ...resultForSummary 
+        } = jobWorkerResultSchema.parse(JSON.parse(newJob.result));
+        const settings = jobAnalyzerSettings.parse(JSON.parse(newJob.settings));
+
         // получаем резюме от ИИ и сохраняем, если все ок
-        aiService.getSummary(newJob).then(summary => {
+        aiService.getSummary({
+            jobId: newJob.jobId,
+            status: newJob.status,
+            userId: newJob.userId,
+            url: newJob.url,
+            settings: settings, // чтоб ИИ понимал что пропаршено и не найдено, а чего изначально быть не должно
+            result: resultForSummary
+        }).then(summary => {
             if(!summary) throw new AIGettingSummaryError(new Error("No summary, nothing to update"));
             JobService.updateJobSummary(newJob.jobId, summary);
         });
