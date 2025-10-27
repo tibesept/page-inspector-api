@@ -3,6 +3,16 @@ import OpenAI from 'openai';
 import * as AIErrors from "../errors/ai";
 import { config } from "../config";
 import logger from "../logger";
+import { JobAnalyzerSettingsDB, JobWorkerResultDTO } from "../types";
+
+type AIInput = {
+    jobId: number;
+    userId: number;
+    url: string;
+    result: Omit<JobWorkerResultDTO, "screenshot">,
+    settings: JobAnalyzerSettingsDB,
+    status: string;
+}
 
 class AIService {
     private openai: OpenAI | null;
@@ -20,13 +30,11 @@ class AIService {
         }
     }
 
-    async getSummary(job: Job): Promise<string | null> {
+    async getSummary(input: AIInput): Promise<string | null> {
         if(!this.openai) {
             logger.error("no openai");
             throw new AIErrors.AIGettingSummaryError(new Error("No openai connection"));
         }
-
-
         try {
             const response = await this.openai.chat.completions.create({
                 model: 'deepseek-chat',
@@ -42,7 +50,7 @@ Dont use any formatting except <b> and <i> tags. Use - symbol for lists
                     },
                     {
                         role: 'user',
-                        content: `Here is analysis. Explain it (shortly). If there is issues, give me recommendations. Ответь на русском. \n<analysis>${JSON.stringify(job)}</analysis>`
+                        content: `Here is analysis. Explain it (shortly). If there is issues, give me recommendations. Ответь на русском. \n<analysis>${JSON.stringify(input)}</analysis>`
                     }
                 ],
                 temperature: 0.7,
